@@ -1,7 +1,13 @@
-const logger = require("winston");
+const winston = require("winston");
 const app = require("./app");
 const port = app.get("port");
 const nextApp = require("./nextApp").nextApp;
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
 
 nextApp.prepare().then(() => {
   const server = app.listen(port);
@@ -10,11 +16,8 @@ nextApp.prepare().then(() => {
     logger.error("Unhandled Rejection at: Promise ", p, reason)
   );
 
-  server.on("listening", () =>
-    logger.info(
-      "Feathers application started on http://%s:%d",
-      app.get("host"),
-      port
-    )
-  );
+  server.on("listening", () => {
+    const host = app.get("host");
+    logger.info(`Feathers application started on http://${host}:${port}`);
+  });
 });
